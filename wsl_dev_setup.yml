@@ -1,0 +1,84 @@
+
+---
+- hosts: localhost
+  become: true
+  tasks:
+
+    # Update package list and upgrade the system
+    - name: Update package list and upgrade system
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    # Install common utilities
+    - name: Install common utilities (git, curl, wget, etc.)
+      apt:
+        name:
+          - git
+          - curl
+          - wget
+          - build-essential
+          - software-properties-common
+        state: present
+
+    # Install Java (OpenJDK 11)
+    - name: Install OpenJDK 11
+      apt:
+        name: openjdk-11-jdk
+        state: present
+
+    # Install Node.js (using Nodesource repository)
+    - name: Add Node.js repository
+      apt_repository:
+        repo: 'deb https://deb.nodesource.com/node_14.x focal main'
+        state: present
+        filename: 'nodesource.list'
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+
+    # Install Python 3 and pip
+    - name: Install Python 3 and pip
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+
+    # Install JavaScript build tools globally (npm)
+    - name: Install JavaScript build tools (npm global installs)
+      npm:
+        name:
+          - eslint
+          - prettier
+        global: yes
+
+    # Install Zsh (alternative shell) and Oh My Zsh
+    - name: Install Zsh
+      apt:
+        name: zsh
+        state: present
+
+    - name: Install Oh My Zsh
+      command: sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" creates=/home/{{ ansible_user_id }}/.oh-my-zsh
+
+    # Set Zsh as default shell
+    - name: Set Zsh as default shell
+      shell: chsh -s $(which zsh) {{ ansible_user_id }}
+
+    # Install other useful development tools
+    - name: Install development tools (tmux, htop, etc.)
+      apt:
+        name:
+          - tmux
+          - htop
+          - silversearcher-ag  # Silver Searcher for fast file searching (like ag or ack)
+        state: present
+
+    # Clean up any unnecessary packages
+    - name: Clean up unused packages
+      apt:
+        autoremove: yes
+        autoclean: yes
